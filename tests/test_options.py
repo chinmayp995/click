@@ -1202,6 +1202,16 @@ def test_missing_envvar_sequence(runner, envvar, expected):
     assert f"Error: Missing option {expected}." in result.output
 
 
+@pytest.mark.parametrize("envvar", [None, [], ""])
+def test_missing_auto_envvar(runner, envvar):
+    """An option using auto_envvar_prefix shows the auto envvar in the error hint."""
+    option = click.Option(["--units"], envvar=envvar, show_envvar=True, required=True)
+    cli = click.Command("cli", params=[option])
+    result = runner.invoke(cli, auto_envvar_prefix="WEATHER")
+    assert result.exit_code == 2
+    assert "Error: Missing option '--units' (env var: 'WEATHER_UNITS')." in result.output
+
+
 def test_case_insensitive_choice(runner):
     @click.command()
     @click.option("--foo", type=click.Choice(["Orange", "Apple"], case_sensitive=False))
